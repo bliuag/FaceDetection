@@ -40,9 +40,9 @@ for i=1:num_images
     HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
     for j=1:num_cells
         for k=1:num_cells
-            for l=1:(num_orientations*4)
-                features_pos(i,((j-1)*num_cells+k-1)*num_orientations*4+l)=HOG(j,k,l);
-            end
+            last=((j-1)*num_cells+k-1)*num_orientations*4;
+            curr=((j-1)*num_cells+k)*num_orientations*4;
+            features_pos(i,(last+1):curr)=HOG(j,k,:);
         end 
     end           
 end

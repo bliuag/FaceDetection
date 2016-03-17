@@ -39,22 +39,22 @@ num_orientations=9;
 D=(num_cells)^2 * 4 * num_orientations;
 features_neg=rand(num_samples,D);
 for i=1:num_samples
-    num=int32(rand*num_images)+1;
+    num=int(rand*num_images)+1;
     if(num>num_images)
         num=num_images;
     end
-    file=fullfile(non_face_scn_path, image_files(num).name);
+    file=fullfile(train_path_pos, image_files(num).name);
     OIm=imread(file);
     [X,Y]=size(OIm);
-    x=int32(rand*(X-feature_params.template_size+1));
-    y=int32(rand*(Y-feature_params.template_size+1));
-    if(x>X-feature_params.template_size)
+    x=int(rand*(X-feature_params.template_size+1))+1;
+    y=int(rand*(Y-feature_params.template_size+1))+1;
+    if(x>X-feature_params.template_size+1)
         x=X-feature_params.template_size;
     end
-    if(y>Y-feature_params.template_size)
+    if(y>Y-feature_params.template_size+1)
         y=Y-feature_params.template_size;
     end
-    Im=OIm((x+1):(x+feature_params.template_size),(y+1):(y+feature_params.template_size));
+    Im=OIm(x:(x+feature_params.template_size-1),y:(y+feature_params.template_size-1));
     HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
     for j=1:num_cells
         for k=1:num_cells

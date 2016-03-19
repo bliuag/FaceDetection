@@ -56,13 +56,16 @@ for i=1:num_samples
     end
     Im=OIm((x+1):(x+feature_params.template_size),(y+1):(y+feature_params.template_size));
     HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
-    for j=1:num_cells
-        for k=1:num_cells
-            last=((j-1)*num_cells+k-1)*num_orientations*4;
-            curr=((j-1)*num_cells+k)*num_orientations*4;
-            features_neg(i,(last+1):curr)=HOG(j,k,:);
-        end 
-    end           
+    temp1=reshape(HOG,[num_cells^2,num_orientations*4]);
+    temp2=transpose(temp1);
+    features_neg(i,:)=reshape(temp2,[D,1]); 
+    %for j=1:num_cells
+    %    for k=1:num_cells
+    %        last=((j-1)*num_cells+k-1)*num_orientations*4;
+    %        curr=((j-1)*num_cells+k)*num_orientations*4;
+    %        features_neg(i,(last+1):curr)=HOG(j,k,:);
+    %    end 
+    %end           
 end
 
 

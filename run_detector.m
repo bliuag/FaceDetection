@@ -41,6 +41,7 @@ fprintf('~~~path: %s', test_scn_path);
 bboxes = zeros(0,4);
 confidences = zeros(0,1);
 image_ids = cell(0,1);
+initial_point = [1,1;4,1;1,4;4,4];
 for i = 1:length(test_scenes)
       
     fprintf('Detecting faces in %s\n', test_scenes(i).name)
@@ -60,49 +61,58 @@ for i = 1:length(test_scenes)
     fprintf('\n');
     while 1
         %fprintf('size:%d*%d\n',size(img,1),size(img,2) );
-        fprintf('rate: %f ',rate);
         if size(img,1)<36 || size(img,2)<36
             break;
         end
-        %You can delete all of this below.
-        % Let's create 15 random detections per image
-        %cur_x_min = rand(15,1) * size(img,2);
-        %cur_y_min = rand(15,1) * size(img,1);
-        %cur_bboxes = [cur_x_min, cur_y_min, cur_x_min + rand(15,1) * 50, cur_y_min + rand(15,1) * 50];
-        %cur_confidences = rand(15,1) * 4 - 2; %confidences in the range [-2 2]
-        %cur_image_ids(1:15,1) = {test_scenes(i).name};
+        for ini=1:4
+            %fprintf('rate: %f ',rate);
+            Im=img(initial_point(ini,1):end,initial_point(ini,2):end);
+            if size(Im,1)<36 || size(Im,2)<36
+                break;
+            end
 
-        [X,Y]=size(img);
-        feature=rand(1,D);
-        %fprintf('Find faces in %s\n', test_scenes(i).name);
+            %You can delete all of this below.
+            % Let's create 15 random detections per image
+            %cur_x_min = rand(15,1) * size(img,2);
+            %cur_y_min = rand(15,1) * size(img,1);
+            %cur_bboxes = [cur_x_min, cur_y_min, cur_x_min + rand(15,1) * 50, cur_y_min + rand(15,1) * 50];
+            %cur_confidences = rand(15,1) * 4 - 2; %confidences in the range [-2 2]
+            %cur_image_ids(1:15,1) = {test_scenes(i).name};
 
-        HOG = vl_hog(single(img),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
+            [X,Y]=size(Im);
+            feature=rand(1,D);
+            %fprintf('Find faces in %s\n', test_scenes(i).name);
 
-        for j=0:feature_params.hog_cell_size:(X-feature_params.template_size)
-            for k=0:feature_params.hog_cell_size:(Y-feature_params.template_size)
-                %Im=img((j+1):(j+feature_params.template_size),(k+1):(k+feature_params.template_size));
-                hog = HOG((j/feature_params.hog_cell_size+1) : (j/feature_params.hog_cell_size+num_cells),... 
-                        (k/feature_params.hog_cell_size+1) : (k/feature_params.hog_cell_size+num_cells),:);
-                temp1=reshape(hog,[num_cells^2,num_orientations*4]);
-                temp2=transpose(temp1);
-                feature(1,:)=reshape(temp2,[1,D]); 
-                %for m=1:num_cells
-                %   for n=1:num_cells
-                %      last=((m-1)*num_cells+n-1)*36;
-                %     curr=((m-1)*num_cells+n)*36;
-                %    feature_pos((last+1):curr)=HOG(m,n,:);
-                % end 
-                %end
-                confidence=feature*w+b;
-                if confidence>0.45
-                    cur_bboxes=[cur_bboxes; (k+1)/rate,(j+1)/rate,(k+feature_params.template_size)/rate,(j+feature_params.template_size)/rate];
-                    cur_confidences=[cur_confidences;confidence];
-                    cur_image_ids=[cur_image_ids;test_scenes(i).name];
+            HOG = vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
+
+            for j=0:feature_params.hog_cell_size:(X-feature_params.template_size)
+                for k=0:feature_params.hog_cell_size:(Y-feature_params.template_size)
+                    %Im=img((j+1):(j+feature_params.template_size),(k+1):(k+feature_params.template_size));
+                    hog = HOG((j/feature_params.hog_cell_size+1) : (j/feature_params.hog_cell_size+num_cells),... 
+                            (k/feature_params.hog_cell_size+1) : (k/feature_params.hog_cell_size+num_cells),:);
+                    temp1=reshape(hog,[num_cells^2,num_orientations*4]);
+                    temp2=transpose(temp1);
+                    feature(1,:)=reshape(temp2,[1,D]); 
+                    %for m=1:num_cells
+                    %   for n=1:num_cells
+                    %      last=((m-1)*num_cells+n-1)*36;
+                    %     curr=((m-1)*num_cells+n)*36;
+                    %    feature_pos((last+1):curr)=HOG(m,n,:);
+                    % end 
+                    %end
+                    confidence=feature*w+b;
+                    if confidence>0.50
+                        cur_bboxes=[cur_bboxes; (k+initial_point(ini,2))/rate,(j+initial_point(ini,1))/rate,...
+                            (k+feature_params.template_size+initial_point(ini,2)-1)/rate,(j-1+feature_params.template_size+initial_point(ini,1))/rate];
+                        cur_confidences=[cur_confidences;confidence];
+                        cur_image_ids=[cur_image_ids;test_scenes(i).name];
+                    end
                 end
             end
         end
         img = imresize(img,0.9);
         rate = rate*0.9;
+        
     end
     %fprintf('Suppress %d %d faces in %s\n', size(cur_bboxes,1),size(cur_confidences,1),test_scenes(i).name);
     %non_max_supr_bbox can actually get somewhat slow with thousands of

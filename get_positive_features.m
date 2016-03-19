@@ -38,13 +38,16 @@ for i=1:num_images
     file=fullfile(train_path_pos, image_files(i).name);
     Im=imread(file);
     HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
-    for j=1:num_cells
-        for k=1:num_cells
-            last=((j-1)*num_cells+k-1)*num_orientations*4;
-            curr=((j-1)*num_cells+k)*num_orientations*4;
-            features_pos(i,(last+1):curr)=HOG(j,k,:);
-        end 
-    end           
+    temp1=reshape(HOG,[num_cells^2,num_orientations*4]);
+    temp2=transpose(temp1);
+    features_pos(i,:)=reshape(temp2,[D,1]); 
+    %for j=1:num_cells
+    %    for k=1:num_cells
+    %       last=((j-1)*num_cells+k-1)*num_orientations*4;
+    %        curr=((j-1)*num_cells+k)*num_orientations*4;
+    %        features_pos(i,(last+1):curr)=HOG(j,k,:);
+    %    end 
+    %end           
 end
 % placeholder to be deleted
 %features_pos = rand(100, (feature_params.template_size / feature_params.hog_cell_size)^2 * 31);

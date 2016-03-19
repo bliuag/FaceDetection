@@ -38,14 +38,40 @@ num_cells= feature_params.template_size / feature_params.hog_cell_size;
 num_orientations=9;
 D=(num_cells)^2 * 4 * num_orientations;
 features_neg=rand(num_samples,D);
-for i=1:num_samples
-    num=int32(rand*num_images)+1;
-    if(num>num_images)
-        num=num_images;
+avr=int32(num_samples/num_images);
+for i=1:num_images
+    file=fullfile(non_face_scn_path, image_files(i).name);
+    Im=imread(file);
+    [X,Y,~]=size(Im);
+    HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
+    for j=1:avr
+        x=int32(rand*(X-feature_params.template_size));
+        y=int32(rand*(Y-feature_params.template_size));
+        %if(x>X-feature_params.template_size)
+        %    x=X-feature_params.template_size;
+        %end
+        %if(y>Y-feature_params.template_size)
+        %    y=Y-feature_params.template_size;
+        %end
+        hog=HOG((x/feature_params.hog_cell_size+1):(x/feature_params.hog_cell_size+num_cells),...
+            (y/feature_params.hog_cell_size+1):(y/feature_params.hog_cell_size+num_cells),:);
+        temp1=reshape(hog,[num_cells^2,num_orientations*4]);
+        temp2=transpose(temp1);
+        features_neg((i-1)*avr+j,:)=reshape(temp2,[D,1]); 
+    %for j=1:num_cells
+    %    for k=1:num_cells
+    %        last=((j-1)*num_cells+k-1)*num_orientations*4;
+    %        curr=((j-1)*num_cells+k)*num_orientations*4;
+    %        features_neg(i,(last+1):curr)=HOG(j,k,:);
+    %    end 
+    %end           
     end
-    file=fullfile(non_face_scn_path, image_files(num).name);
-    OIm=imread(file);
-    [X,Y]=size(OIm);
+end
+file=fullfile(non_face_scn_path, image_files(1).name);
+Im=imread(file);
+[X,Y]=size(Im);
+HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
+for j=1:(num_samples-avr*num_images)
     x=int32(rand*(X-feature_params.template_size+1));
     y=int32(rand*(Y-feature_params.template_size+1));
     if(x>X-feature_params.template_size)
@@ -54,18 +80,18 @@ for i=1:num_samples
     if(y>Y-feature_params.template_size)
         y=Y-feature_params.template_size;
     end
-    Im=OIm((x+1):(x+feature_params.template_size),(y+1):(y+feature_params.template_size));
-    HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
-    temp1=reshape(HOG,[num_cells^2,num_orientations*4]);
+   hog=HOG(((x-1)/feature_params.hog_cell_size+1):((x-1)/feature_params.hog_cell_size+num_cells),...
+            ((y-1)/feature_params.hog_cell_size+1):((y-1)/feature_params.hog_cell_size+num_cells),:);
+    temp1=reshape(hog,[num_cells^2,num_orientations*4]);
     temp2=transpose(temp1);
-    features_neg(i,:)=reshape(temp2,[D,1]); 
-    %for j=1:num_cells
-    %    for k=1:num_cells
-    %        last=((j-1)*num_cells+k-1)*num_orientations*4;
-    %        curr=((j-1)*num_cells+k)*num_orientations*4;
-    %        features_neg(i,(last+1):curr)=HOG(j,k,:);
-    %    end 
-    %end           
+    features_neg(num_images*avr+j,:)=reshape(temp2,[D,1]); 
+%for j=1:num_cells
+%    for k=1:num_cells
+%        last=((j-1)*num_cells+k-1)*num_orientations*4;
+%        curr=((j-1)*num_cells+k)*num_orientations*4;
+%        features_neg(i,(last+1):curr)=HOG(j,k,:);
+%    end 
+%end           
 end
 
 

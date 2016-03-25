@@ -37,6 +37,10 @@ features_pos=rand(num_images,D);
 for i=1:num_images
     file=fullfile(train_path_pos, image_files(i).name);
     Im=imread(file);
+    if(size(Im,3) > 1)
+        Im = rgb2gray(Im);
+    end
+    Im = single(Im)/255;
     HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
     temp1=reshape(HOG,[num_cells^2,num_orientations*4]);
     temp2=transpose(temp1);

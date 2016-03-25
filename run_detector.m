@@ -41,15 +41,15 @@ fprintf('~~~path: %s', test_scn_path);
 bboxes = zeros(0,4);
 confidences = zeros(0,1);
 image_ids = cell(0,1);
-initial_point = [1,1;4,1;1,4;4,4];
+initial_point = [1,1;1,5;1,9;5,1;5,5;5,9;9,1;9,5;9,9];
 for i = 1:length(test_scenes)
       
-    fprintf('Detecting faces in %s\n', test_scenes(i).name)
+    fprintf('\n\nDetecting faces in %s', test_scenes(i).name)
     IMG = imread( fullfile( test_scn_path, test_scenes(i).name ));
     if(size(IMG,3) > 1)
         IMG = rgb2gray(IMG);
     end
-    %img = single(img)/255;???
+    IMG = single(IMG)/255;
     img = IMG;
     num_cells= feature_params.template_size / feature_params.hog_cell_size; %6.
     num_orientations=9;
@@ -64,7 +64,7 @@ for i = 1:length(test_scenes)
         if size(img,1)<36 || size(img,2)<36
             break;
         end
-        for ini=1:4
+        for ini=1:9
             %fprintf('rate: %f ',rate);
             Im=img(initial_point(ini,1):end,initial_point(ini,2):end);
             if size(Im,1)<36 || size(Im,2)<36
@@ -85,8 +85,8 @@ for i = 1:length(test_scenes)
 
             HOG = vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
 
-            for j=0:feature_params.hog_cell_size:(X-feature_params.template_size)
-                for k=0:feature_params.hog_cell_size:(Y-feature_params.template_size)
+            for j=0:(feature_params.hog_cell_size*2):(X-feature_params.template_size)
+                for k=0:(feature_params.hog_cell_size*2):(Y-feature_params.template_size)
                     %Im=img((j+1):(j+feature_params.template_size),(k+1):(k+feature_params.template_size));
                     hog = HOG((j/feature_params.hog_cell_size+1) : (j/feature_params.hog_cell_size+num_cells),... 
                             (k/feature_params.hog_cell_size+1) : (k/feature_params.hog_cell_size+num_cells),:);
@@ -101,9 +101,9 @@ for i = 1:length(test_scenes)
                     % end 
                     %end
                     confidence=feature*w+b;
-                    if confidence>0.50
+                    if confidence>0.9
                         cur_bboxes=[cur_bboxes; (k+initial_point(ini,2))/rate,(j+initial_point(ini,1))/rate,...
-                            (k+feature_params.template_size+initial_point(ini,2)-1)/rate,(j-1+feature_params.template_size+initial_point(ini,1))/rate];
+                            (k+feature_params.template_size+initial_point(ini,2))/rate,(j+feature_params.template_size+initial_point(ini,1))/rate];
                         cur_confidences=[cur_confidences;confidence];
                         cur_image_ids=[cur_image_ids;test_scenes(i).name];
                     end

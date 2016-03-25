@@ -42,6 +42,10 @@ avr=int32(num_samples/num_images);
 for i=1:num_images
     file=fullfile(non_face_scn_path, image_files(i).name);
     Im=imread(file);
+    if(size(Im,3) > 1)
+        Im = rgb2gray(Im);
+    end
+    Im = single(Im)/255;
     [X,Y,~]=size(Im);
     HOG=vl_hog(single(Im),feature_params.hog_cell_size,'variant','dalaltriggs','numOrientations',num_orientations);
     for j=1:avr

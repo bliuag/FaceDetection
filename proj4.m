@@ -60,7 +60,7 @@ feature_params = struct('template_size', 36, 'hog_cell_size', 6);
     
 features_pos = get_positive_features( train_path_pos, feature_params );
 
-num_negative_examples = 100000; %Higher swill work strictly better, but you should start with 10000 for debugging
+num_negative_examples = 300000; %Higher swill work strictly better, but you should start with 10000 for debugging
 features_neg = get_random_negative_features( non_face_scn_path, feature_params, num_negative_examples);
 
     
@@ -158,9 +158,9 @@ imwrite(hog_template_image, 'visualizations/hog_template.png')
     evaluate_detections(bboxes, confidences, image_ids, label_path);
 
 %visualize_detections_by_image(bboxes, confidences, image_ids, tp, fp, test_scn_path, label_path)
-% visualize_detections_by_image_no_gt(bboxes, confidences, image_ids, test_scn_path)
+ visualize_detections_by_image_no_gt(bboxes, confidences, image_ids, test_scn_path)
 
- visualize_detections_by_confidence(bboxes, confidences, image_ids, test_scn_path, label_path);
+ %visualize_detections_by_confidence(bboxes, confidences, image_ids, test_scn_path, label_path);
 
 % performance to aim for
 % random (stater code) 0.001 AP

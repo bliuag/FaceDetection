@@ -21,12 +21,12 @@ The face detection mainly contains the following steps:
 
 *The positive training database of 6,713 cropped 36x36 faces from Caltech Web Faces project, and negative training database come from Wu et al. and the SUN scene database.*  
 
-*Determine random negative samples*  
+#### Determine random negative samples  
 For each negative images, we randomly generate two integers, indicating the position of the 36x36 images. And the total number of random negative samples is 300,000.
 
-*Train Linear SVM*  
+#### Train Linear SVM  
 We use Linear SVM(vl_svmtrain) with lambda as 0.0001 to get a linear classifier. 
 
-*Multi-scaling and step size*  
+#### Multi-scaling and step size
 We change the scale of window by zooming the original test picture, downsampled to 90% recursively, and not stop downsampling until the picture has size less then 36x36.The step size we decided is 4, in compromising the efficiency and accuracy.
 
